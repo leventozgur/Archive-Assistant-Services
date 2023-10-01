@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="00: default_platform" time="0.004909">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="01: rm -rf /Users/leventozgur/Downloads/tmpMaximumIsyerimForFastlane" time="1.400554">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="02: slack" time="0.482868">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="03: cd /Users/leventozgur/Downloads/ &amp;&amp; mkdir tmpMaximumIsyerimForFastlane" time="0.082947">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="04: cd /Users/leventozgur/Downloads/tmpMaximumIsyerimForFastlane &amp;&amp; git clone -b dev git@ssh.dev.azure.com:v3/topkapi-as/Maximum-Isyerim/Maximum-Isyerim-iOS" time="952.147068">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="05: rm -rf /Users/leventozgur/Downloads/tmpMaximumIsyerimForFastlane/Maximum-Isyerim-iOS/Isyerim.xcworkspace/xcshareddata/swiftpm/Package.resolved" time="0.014493">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="06: rm -rf /Users/leventozgur/Downloads/tmpMaximumIsyerimForFastlane/Maximum-Isyerim-iOS/Podfile.lock" time="0.014044">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="07: rm -rf /Users/leventozgur/Downloads/tmpMaximumIsyerimForFastlane/Maximum-Isyerim-iOS/Pods/" time="0.307901">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="08: rm -rf ~/Library/Developer/Xcode/DerivedData/" time="12.787322">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="09: cd /Users/leventozgur/Downloads/tmpMaximumIsyerimForFastlane/Maximum-Isyerim-iOS &amp;&amp; source ~/.bash_profile &amp;&amp; pod install" time="9.66091">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="10: fastlane sigh download_all -u levent.ozgur@topkapidanismanlik.com.tr --team_id  LMSRBXZ5WF" time="14.520422">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="11: sed -i '' -e 's/MARKETING_VERSION \= [^\;]*\;/MARKETING_VERSION = 2.4.7;/' /Users/leventozgur/Downloads/tmpMaximumIsyerimForFastlane/Maximum-Isyerim-iOS/Isyerim.xcodeproj/project.pbxproj" time="0.053917">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="12: cd /Users/leventozgur/Downloads/tmpMaximumIsyerimForFastlane/Maximum-Isyerim-iOS/ &amp;&amp; xcrun agvtool new-version -all 57" time="1.725809">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="13: gym" time="418.033463">
+        
+          <failure message="/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/actions/actions_helper.rb:67:in `execute_action'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/runner.rb:255:in `block in execute_action'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/runner.rb:229:in `chdir'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/runner.rb:229:in `execute_action'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/runner.rb:157:in `trigger_action_by_name'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/fast_file.rb:159:in `method_missing'&#10;Fastfile:153:in `ExportAsIPA'&#10;Fastfile:388:in `block (2 levels) in parsing_binding'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/lane.rb:33:in `call'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/runner.rb:49:in `block in execute'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/runner.rb:45:in `chdir'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/runner.rb:45:in `execute'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/lane_manager.rb:47:in `cruise_lane'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/command_line_handler.rb:36:in `handle'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/commands_generator.rb:110:in `block (2 levels) in run'&#10;/Library/Ruby/Gems/2.6.0/gems/commander-4.6.0/lib/commander/command.rb:187:in `call'&#10;/Library/Ruby/Gems/2.6.0/gems/commander-4.6.0/lib/commander/command.rb:157:in `run'&#10;/Library/Ruby/Gems/2.6.0/gems/commander-4.6.0/lib/commander/runner.rb:444:in `run_active_command'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in `run!'&#10;/Library/Ruby/Gems/2.6.0/gems/commander-4.6.0/lib/commander/delegates.rb:18:in `run!'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/commands_generator.rb:354:in `run'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/commands_generator.rb:43:in `start'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in `take_off'&#10;/Library/Ruby/Gems/2.6.0/gems/fastlane-2.213.0/bin/fastlane:23:in `&lt;top (required)&gt;'&#10;/usr/local/bin/fastlane:23:in `load'&#10;/usr/local/bin/fastlane:23:in `&lt;main&gt;'&#10;&#10;Error packaging up the application" />
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

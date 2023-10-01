@@ -1,0 +1,222 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+# Projeyi Archive ya da IPA olarak çıktısını alabilmek için geçici olarak repo üzerinden çeker.
+def DownloadAppInTempFolder(appName, appPath, branch, gitURL, appDownloadFolder)
+  sh("cd #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]} && mkdir #{appDownloadFolder}")
+  sh("cd #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder} && git clone -b #{branch} #{gitURL}")
+
+  if appName == "App2"
+    sh("rm -rf #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath}/xcshareddata/swiftpm/Package.resolved")
+    sh("rm -rf #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath.split("/").first}/Podfile.lock")
+    sh("rm -rf #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath.split("/").first}/Pods/")
+  else
+    sh("rm -rf #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath}/project.xcworkspace/xcshareddata/swiftpm/Package.resolved")
+  end
+
+  sh("rm -rf ~/Library/Developer/Xcode/DerivedData/")
+  podInstall(appName, appPath, appDownloadFolder)
+end
+
+#Pod install 
+def podInstall(appName, appPath, appDownloadFolder)
+  if appName == "App2"
+    sh("cd #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath.split("/").first} && source ~/.bash_profile && pod install")
+  end
+end
+
+
+# Updates the version & build numbers of the project
+def ChangeVersion(appName, appPath, versionNumber, buildNumber, appDownloadFolder)
+  #Version Number
+  if appName == "App2"
+    sh("sed -i '' -e 's/MARKETING_VERSION \\= [^\\;]*\\;/MARKETING_VERSION = #{versionNumber};/' #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath.split(".").first}.xcodeproj/project.pbxproj")
+  else
+    sh("sed -i '' -e 's/MARKETING_VERSION \\= [^\\;]*\\;/MARKETING_VERSION = #{versionNumber};/' #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath}/project.pbxproj")
+  end
+
+  #Build Number
+  sh("cd #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath.split("/").first}/ && xcrun agvtool new-version -all #{buildNumber}")
+end
+
+# Downloads and updates certificates
+def UpdateCertificates()
+    sh("fastlane sigh download_all -u #{ENV["APPLE_ACCOUNT_USERNAME"]} --team_id  #{ENV["TEAM_OTHER_ID"]}")
+  end
+end
+
+# Extracts the project as IPA.
+def ExportAsIPA(appName, appPath, scheme, versionNumber, buildNumber, appDownloadFolder)
+  ChangeVersion(appName, appPath, versionNumber, buildNumber, appDownloadFolder)
+  
+  if appName == "App2"
+    gym(
+      workspace: "#{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath}",
+      scheme: "#{scheme}",
+      clean: true,
+      output_name: "#{appName}_#{scheme}_#{versionNumber}_#{buildNumber}.ipa",
+      output_directory: ENV["MAC_DOWNLOADS_FOLDER_PATH"]
+    )
+  else
+    gym(
+      project: "#{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath}",
+      scheme: "#{scheme}",
+      clean: true,
+      output_name: "#{appName}_#{scheme}_#{versionNumber}_#{buildNumber}.ipa",
+      output_directory: ENV["MAC_DOWNLOADS_FOLDER_PATH"]
+    )
+  end
+end
+
+# It sends the version & build numbers of the project and the changes of the package.resolved file for PR opening.
+def SendDiffToNewBranch(appName, appPath, newBranchName, appDownloadFolder)
+  path = "#{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}/#{appPath.split("/").first}/"
+  projectFullName = "#{appPath.split("/").last}"
+
+  sh("cd #{path} && git checkout -b #{newBranchName}")
+
+  if appName == "App2"
+    sh("cd #{path} && git add #{projectFullName}/xcshareddata/swiftpm/Package.resolved")
+    sh("cd #{path} && git add #{projectFullName.split(".xcworkspace").first}.xcodeproj/project.pbxproj")
+  else
+    sh("cd #{path} && git add #{projectFullName}/project.xcworkspace/xcshareddata/swiftpm/Package.resolved")
+    sh("cd #{path} && git add #{projectFullName}/project.pbxproj")
+  end
+
+  sh("cd #{path} && git commit -m 'archive files'")
+  sh("cd #{path} && git push -u origin #{newBranchName}")
+end
+
+# Sends the IPA file to AppStoreConnect.
+def UploadToAppStoreConnect(appName, branch, scheme, versionNumber, buildNumber, whatsNew, appIdentifier, teamId, appleId)
+  upload_to_testflight(
+    username: ENV["APPLE_ACCOUNT_USERNAME"],
+    app_identifier: appIdentifier,
+    apple_id: appleId,
+    team_id: teamId,
+    app_platform: "ios",
+    skip_waiting_for_build_processing: true,
+    changelog: "#{branch} branch, #{scheme} scheme \n#{whatsNew}",
+    ipa: "#{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appName}_#{scheme}_#{versionNumber}_#{buildNumber}.ipa",
+  )
+end
+
+# Reports the situation to the Slack Channel.
+def NotifyToSlack(appName, appBranch, appScheme, versionNumber, buildNumber, whatsNew)
+  slack(                                            
+    message: "Roketler ateşlendi! 🚀 Yeni #{appName} Sürümü TestFlight'ta uçuşa hazır.",
+    username: "Uçuş Kontrol Merkezi",
+    success: true,
+    channel: ENV["SLACK_CHANEL"],
+    payload: {
+      "🗓 Build Date" => Time.new.strftime("%d/%m/%Y %T"),
+      "🔔 User" => "#{ENV["APPLE_ACCOUNT_USERNAME"]}",
+      "🔔 Branch" => "#{appBranch}",
+      "🔔 Scheme" => "#{appScheme}",
+      "🔔 Version Number" => "#{versionNumber}",
+      "🔔 Build Number" => "#{buildNumber}",
+      "🔔 What is New" => "#{whatsNew}",
+    },
+    slack_url: ENV["SLACK_URL"]
+  )
+end
+
+# Reports the situation to the Slack Channel.
+def NotifyStartToSlack(appName, appBranch, appScheme, versionNumber, buildNumber)
+  slack(                                            
+    message: "⏳ 🛠️ ⚙️ Yeni #{appName} Sürümü için Roket Fırlatmaya Hazırlanıyor !.... ==> #{appBranch} - #{appScheme} - #{versionNumber} (#{buildNumber}) - #{ENV["APPLE_ACCOUNT_USERNAME"]}",
+    username: "Uçuş Kontrol Merkezi",
+    success: true,
+    channel: ENV["SLACK_CHANEL"],
+    slack_url: ENV["SLACK_URL"]
+  )
+end
+
+# Geçici olarak indirilen Projeyi ve klasörü siler.
+def RemoveTheTempFolder(appName, scheme, versionNumber, buildNumber, appDownloadFolder, isStartAction)
+  if isStartAction == false
+    sh("rm -rf #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appName}_#{scheme}_#{versionNumber}_#{buildNumber}.ipa")
+    sh("rm -rf #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appName}_#{scheme}_#{versionNumber}_#{buildNumber}.app.dSYM.zip")
+  end
+  
+  if appDownloadFolder != ""
+    sh("rm -rf #{ENV["MAC_DOWNLOADS_FOLDER_PATH"]}#{appDownloadFolder}")
+  end
+
+end
+
+# Options ile alınan parametreleri kullanarak eksik parametreleri tamamlar
+def DefineValues(appName, versionNumber, buildNumber, appBranch, appScheme)
+
+  appPath = ""
+  gitURL = ""
+  appIdentifier = ""
+  teamId = ""
+  appleId = ""
+  appDownloadFolder = ""
+  current_time = Time.now.strftime("%H.%M")
+
+  if appName == "App1"
+    appPath = "PZApp/PZApp.xcodeproj"
+    gitURL = ENV["APP1_GIT_URL"]
+    teamId = ENV["TEAM_ID"]
+    appDownloadFolder = ENV["APP1_DOWNLOAD_FOLDER"]
+    appIdentifier = ENV["APP1_IDENTIFIER"]
+    appleId = ENV["APP1_APPLE_ID"]
+  elsif appName == "App2"
+    appPath = "App2/App2.xcworkspace"
+    gitURL = ENV["APP2_GIT_URL"]
+    appDownloadFolder = ENV["APP2_DOWNLOAD_FOLDER"]
+    appIdentifier = ENV["APP2_IDENTIFIER"]
+    teamId = ENV["TEAM_ID"]
+    appleId = ENV["APP2_APPLE_ID"]
+  end
+
+
+  return appPath, gitURL, current_time, appIdentifier, teamId, appleId, appDownloadFolder
+end
+
+##################
+# Main
+##################
+platform :ios do
+
+  desc "Start Deployment Automatically"
+  lane :autoDeploy do |options|
+    appName = options[:appName]
+    versionNumber = options[:versionNumber]
+    buildNumber = options[:buildNumber]
+    appBranch = options[:appBranch]
+    appScheme = options[:appScheme]
+    whatsNew = options[:whatsNew]
+
+    appPath, gitURL, current_time, appIdentifier, teamId, appleId, appDownloadFolder = DefineValues(appName, versionNumber, buildNumber, appBranch, appScheme)
+
+    
+    RemoveTheTempFolder(appName, appScheme, versionNumber, buildNumber, appDownloadFolder, true)
+    NotifyStartToSlack(appName, appBranch, appScheme, versionNumber, buildNumber)
+    DownloadAppInTempFolder(appName, appPath, appBranch, gitURL, appDownloadFolder)
+    UpdateCertificates()
+    ExportAsIPA(appName, appPath, appScheme, versionNumber, buildNumber, appDownloadFolder)
+    SendDiffToNewBranch(appName, appPath, "ArchiveBranches/#{appBranch}_#{appScheme}_#{versionNumber}_#{buildNumber}_#{current_time}", appDownloadFolder)
+    UploadToAppStoreConnect(appName, appBranch, appScheme, versionNumber, buildNumber, whatsNew, appIdentifier, teamId, appleId)
+    RemoveTheTempFolder(appName, appScheme, versionNumber, buildNumber, appDownloadFolder, false)
+    NotifyToSlack(appName, appBranch, appScheme, versionNumber, buildNumber, whatsNew)
+  end
+
+end
+

@@ -1,0 +1,42 @@
+# app_identifier("[[APP_IDENTIFIER]]") # The bundle identifier of your app
+# apple_id("[[APPLE_ID]]") # Your Apple Developer Portal username
+
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
+
+## Local Paths
+ENV["MAC_DOWNLOADS_FOLDER_PATH"] = ""  ##"/Users/leventozgur/Downloads/"
+
+## APP_DOWNLOAD_FOLDER
+ENV["APP1_DOWNLOAD_FOLDER"] = ""  ##"tmpApp1ForFastlane"
+ENV["APP2_DOWNLOAD_FOLDER"] = ""  ##"tmpApp1ForFastlane"
+
+ENV["PAZARAMA_APP_DOWNLOAD_FOLDER"] = "tmpPazaramaForFastlane"
+ENV["MM_APP_DOWNLOAD_FOLDER"] = "tmpMaximumMobilForFastlane"
+ENV["ISYERIM_APP_DOWNLOAD_FOLDER"] = "tmpMaximumIsyerimForFastlane"
+
+## APP_GIT_URL
+ENV["APP1_GIT_URL"] = "" ##"https://github.com/leventozgur/..."
+ENV["APP2_GIT_URL"] = "" ##"https://github.com/leventozgur/..."
+
+## TEAM_ID
+ENV["TEAM_ID"] = "" ##"12345678"
+ENV["TEAM_OTHER_ID"] = "" ##"ABCDEFGH"
+
+## APPLE_ID
+ENV["APP1_APPLE_ID"] = "" ##"12345678"
+ENV["APP2_APPLE_ID"] = "" ##"98765432"
+
+## APP_IDENTIFIER
+ENV["APP1_IDENTIFIER"] = "" ##"com.levent.app1"
+ENV["APP2_IDENTIFIER"] = "" ##"com.levent.app2"
+
+## Apple Account
+# 2FA must be enabled and an application-specific password must be created at https://appleid.apple.com/
+ENV["APPLE_ACCOUNT_USERNAME"] = "" #Apple id email 
+ENV["FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD"] = "" #application-specific password
+
+#Slack
+ENV["SLACK_URL"] = "" ##"https://hooks.slack.com/services/..." #slack hook url
+ENV["SLACK_CHANEL"] = "" ##"#ios_package_release" #slack channel name
